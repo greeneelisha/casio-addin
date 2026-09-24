@@ -1,0 +1,59 @@
+name: Build Casio Add-in
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get source
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git \
+            cmake \
+            python3 \
+            python3-pip \
+            python3-pil \
+            build-essential \
+            pkg-config \
+            libpng-dev \
+            libusb-1.0-0-dev \
+            libudev-dev \
+            libncurses-dev
+
+      - name: Install GiteaPC
+        run: |
+          python3 -m pip install --user giteapc
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install Casio toolchain
+        run: |
+          giteapc install Lephenixnoir/sh-elf-gcc
+          giteapc install Lephenixnoir/OpenLibm
+          giteapc install Vhex-Kernel-Core/fxlibc
+          giteapc install Lephenixnoir/gint
+          giteapc install Lephenixnoir/Fx-SDK
+
+      - name: Build G1A
+        run: |
+          fxsdk build-fx
+
+      - name: Find G1A
+        run: |
+          find . -name "*.g1a" -type f -print
+
+      - name: Upload G1A
+        uses: actions/upload-artifact@v4
+        with:
+          name: Casio-Addin
+          path: "*.g1a"
+          if-no-files-found: error
