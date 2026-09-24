@@ -34,57 +34,74 @@ jobs:
             libudev-dev \
             libncurses-dev
 
-      - name: Install GiteaPC
+      - name: Download GiteaPC
         run: |
           git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
 
-          chmod +x "$HOME/GiteaPC/giteapc"
+          echo "GiteaPC repository:"
+          find "$HOME/GiteaPC" -maxdepth 2 -type f -print
 
-          echo "GiteaPC contents:"
+      - name: Check GiteaPC files
+        run: |
+          echo "Top-level files:"
           ls -la "$HOME/GiteaPC"
 
-          echo "GiteaPC executable:"
-          ls -l "$HOME/GiteaPC/giteapc"
+          echo "GiteaPC directory:"
+          ls -la "$HOME/GiteaPC/giteapc"
 
-      - name: Check GiteaPC
+          echo "Python files:"
+          find "$HOME/GiteaPC" -type f -name "*.py" -print
+
+      - name: Run GiteaPC
         run: |
-          export GITEAPC="$HOME/GiteaPC/giteapc"
+          cd "$HOME/GiteaPC"
 
-          echo "Testing GiteaPC:"
-          "$GITEAPC" list
+          python3 giteapc.py list
 
       - name: Install Casio toolchain
         run: |
-          export GITEAPC="$HOME/GiteaPC/giteapc"
+          cd "$HOME/GiteaPC"
 
-          "$GITEAPC" install -y \
+          python3 giteapc.py install -y \
             Lephenixnoir/fxsdk:noudisks2 \
             Lephenixnoir/sh-elf-binutils \
-            Lephenixnoir/sh-elf-gcc \
+            Lephenixnoir/sh-elf-gcc
+
+      - name: Install libraries
+        run: |
+          cd "$HOME/GiteaPC"
+
+          python3 giteapc.py install -y \
             Lephenixnoir/OpenLibm \
             Vhex-Kernel-Core/fxlibc
 
-          "$GITEAPC" install -y \
+      - name: Rebuild GCC
+        run: |
+          cd "$HOME/GiteaPC"
+
+          python3 giteapc.py install -y \
             Lephenixnoir/sh-elf-gcc
 
-          "$GITEAPC" install -y \
+      - name: Install gint
+        run: |
+          cd "$HOME/GiteaPC"
+
+          python3 giteapc.py install -y \
             Lephenixnoir/gint
 
-      - name: Add installed tools to PATH
+      - name: Add GiteaPC tools to PATH
         run: |
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-          if [ -d "$HOME/.local/share/giteapc" ]; then
-            find "$HOME/.local/share/giteapc" -type d -name bin -print
-          fi
 
       - name: Check fxSDK
         run: |
           export PATH="$HOME/.local/bin:$PATH"
 
-          echo "Checking fxsdk:"
+          echo "fxsdk location:"
           which fxsdk
-          fxsdk
+
+          echo "fxsdk version:"
+          fxsdk --version || true
 
       - name: Build G1A
         run: |
@@ -95,6 +112,7 @@ jobs:
       - name: Find G1A
         run: |
           echo "Searching for G1A files..."
+
           find . -type f -name "*.g1a" -print
 
       - name: Upload G1A
