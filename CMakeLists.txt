@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 
 project(casio_addin)
 
+find_module(Gint 2.1 REQUIRED)
+
 include(GenerateG1A)
 
 set(SOURCES
