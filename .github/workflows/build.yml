@@ -36,9 +36,10 @@ jobs:
             libncurses-dev \
             libglib2.0-dev \
             libudisks2-dev \
-            udisks2
+            udisks2 \
+            libsdl2-dev
 
-      - name: Verify UDisks2 dependencies
+      - name: Verify dependencies
         run: |
           echo "Checking GLib..."
           pkg-config --modversion glib-2.0
@@ -47,6 +48,9 @@ jobs:
 
           echo "Checking UDisks2..."
           pkg-config --modversion udisks2
+
+          echo "Checking SDL2..."
+          pkg-config --modversion sdl2
 
       - name: Download GiteaPC
         run: |
