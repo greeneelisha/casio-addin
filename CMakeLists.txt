@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(casio_addin)
-
-find_module(Gint 2.1 REQUIRED)
+project(CasioAddin)
 
 include(GenerateG1A)
 
@@ -10,14 +8,13 @@ set(SOURCES
     src/main.c
 )
 
-add_executable(casio_addin ${SOURCES})
+add_executable(CasioAddin ${SOURCES})
 
-target_link_libraries(casio_addin
+target_link_libraries(CasioAddin
     Gint::Gint
 )
 
 generate_g1a(
-    TARGET casio_addin
+    TARGET CasioAddin
     OUTPUT "CasioAddin.g1a"
-    VERSION 1.0.0
 )
