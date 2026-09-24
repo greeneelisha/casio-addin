@@ -36,55 +36,60 @@ jobs:
 
       - name: Install GiteaPC
         run: |
-          curl "https://git.planet-casio.com/Lephenixnoir/GiteaPC/raw/branch/master/install.sh" \
-            -o /tmp/giteapc-install.sh
+          git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
 
-          bash /tmp/giteapc-install.sh
+          chmod +x "$HOME/GiteaPC/giteapc"
 
-      - name: Locate GiteaPC
-        run: |
-          echo "HOME=$HOME"
-          echo "PATH=$PATH"
+          echo "GiteaPC contents:"
+          ls -la "$HOME/GiteaPC"
 
-          echo "Checking ~/.local/bin:"
-          ls -la "$HOME/.local/bin" || true
-
-          echo "Searching for giteapc:"
-          find "$HOME/.local" -type f -name "giteapc" -print 2>/dev/null || true
-
-          echo "Searching entire home directory:"
-          find "$HOME" -type f -name "giteapc" -print 2>/dev/null || true
+          echo "GiteaPC executable:"
+          ls -l "$HOME/GiteaPC/giteapc"
 
       - name: Check GiteaPC
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
+          export GITEAPC="$HOME/GiteaPC/giteapc"
 
-          if command -v giteapc >/dev/null 2>&1; then
-            echo "GiteaPC found:"
-            command -v giteapc
-            giteapc list
-          else
-            echo "ERROR: GiteaPC was not found."
-            echo "Contents of ~/.local:"
-            find "$HOME/.local" -maxdepth 3 -type f -print 2>/dev/null || true
-            exit 1
-          fi
+          echo "Testing GiteaPC:"
+          "$GITEAPC" list
 
       - name: Install Casio toolchain
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
+          export GITEAPC="$HOME/GiteaPC/giteapc"
 
-          giteapc install -y \
-            Lephenixnoir/fxsdk \
+          "$GITEAPC" install -y \
+            Lephenixnoir/fxsdk:noudisks2 \
             Lephenixnoir/sh-elf-binutils \
             Lephenixnoir/sh-elf-gcc \
             Lephenixnoir/OpenLibm \
-            Vhex-Kernel-Core/fxlibc \
+            Vhex-Kernel-Core/fxlibc
+
+          "$GITEAPC" install -y \
+            Lephenixnoir/sh-elf-gcc
+
+          "$GITEAPC" install -y \
             Lephenixnoir/gint
+
+      - name: Add installed tools to PATH
+        run: |
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+          if [ -d "$HOME/.local/share/giteapc" ]; then
+            find "$HOME/.local/share/giteapc" -type d -name bin -print
+          fi
+
+      - name: Check fxSDK
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+
+          echo "Checking fxsdk:"
+          which fxsdk
+          fxsdk
 
       - name: Build G1A
         run: |
           export PATH="$HOME/.local/bin:$PATH"
+
           fxsdk build-fx
 
       - name: Find G1A
