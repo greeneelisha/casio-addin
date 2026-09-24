@@ -32,16 +32,13 @@ jobs:
             libpng-dev \
             libusb-1.0-0-dev \
             libudev-dev \
-            libncurses-dev \
-            libudisks2-dev \
-            udisks2
+            libncurses-dev
 
       - name: Download GiteaPC
         run: |
           git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
 
           echo "GiteaPC downloaded successfully."
-          echo "Repository contents:"
           ls -la "$HOME/GiteaPC"
 
       - name: Check GiteaPC
@@ -62,6 +59,30 @@ jobs:
             Vhex-Kernel-Core/fxlibc \
             Lephenixnoir/gint \
             Lephenixnoir/fxsdk
+
+      - name: Configure fxSDK without UDisks2
+        run: |
+          FXSDK_DIR="$HOME/.local/share/giteapc/Lephenixnoir/fxsdk"
+
+          echo "fxSDK directory:"
+          echo "$FXSDK_DIR"
+
+          cd "$FXSDK_DIR"
+
+          rm -rf build
+
+          cmake -B build \
+            -DCMAKE_INSTALL_PREFIX="$HOME/.local" \
+            -DFXLINK_DISABLE_UDISKS2=1
+
+      - name: Build and install fxSDK
+        run: |
+          FXSDK_DIR="$HOME/.local/share/giteapc/Lephenixnoir/fxsdk"
+
+          cd "$FXSDK_DIR"
+
+          cmake --build build -j2
+          cmake --install build
 
       - name: Add installed tools to PATH
         run: |
