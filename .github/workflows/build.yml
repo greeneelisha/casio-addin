@@ -36,25 +36,22 @@ jobs:
       - name: Install GiteaPC
         run: |
           git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
-          cd "$HOME/GiteaPC"
-          python3 giteapc.py --install
-
+          chmod +x "$HOME/GiteaPC/giteapc"
           echo "$HOME/GiteaPC" >> "$GITHUB_PATH"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Check GiteaPC
         run: |
-          command -v giteapc
-          giteapc --help
+          giteapc list
 
       - name: Install Casio toolchain
         run: |
-          giteapc install Lephenixnoir/sh-elf-binutils
-          giteapc install Lephenixnoir/sh-elf-gcc
-          giteapc install Lephenixnoir/OpenLibm
-          giteapc install Lephenixnoir/fxlibc
-          giteapc install Lephenixnoir/gint
-          giteapc install Lephenixnoir/fxsdk
+          giteapc install -y Lephenixnoir/sh-elf-binutils
+          giteapc install -y Lephenixnoir/sh-elf-gcc
+          giteapc install -y Lephenixnoir/OpenLibm
+          giteapc install -y Lephenixnoir/fxlibc
+          giteapc install -y Lephenixnoir/gint
+          giteapc install -y Lephenixnoir/fxsdk
 
       - name: Build G1A
         run: |
