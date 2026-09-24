@@ -32,7 +32,9 @@ jobs:
             libpng-dev \
             libusb-1.0-0-dev \
             libudev-dev \
-            libncurses-dev
+            libncurses-dev \
+            libudisks2-dev \
+            udisks2
 
       - name: Download GiteaPC
         run: |
