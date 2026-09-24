@@ -1,13 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
+
 project(casio_addin)
 
-include(FxSDK)
-
-fxconv_declare_conventions(
-    "${FXSDK_COMPILER}"
-    "${FXSDK_TOOLCHAIN}"
-    "${FXSDK_ARCH}"
-)
+include(GenerateG1A)
 
 set(SOURCES
     src/main.c
@@ -19,4 +14,8 @@ target_link_libraries(casio_addin
     Gint::Gint
 )
 
-fxg1a_add_target(casio_addin)
+generate_g1a(
+    TARGET casio_addin
+    OUTPUT "CasioAddin.g1a"
+    VERSION 1.0.0
+)
