@@ -38,58 +38,30 @@ jobs:
         run: |
           git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
 
-          echo "GiteaPC repository:"
-          find "$HOME/GiteaPC" -maxdepth 2 -type f -print
-
-      - name: Check GiteaPC files
-        run: |
-          echo "Top-level files:"
+          echo "GiteaPC downloaded successfully."
+          echo "Repository contents:"
           ls -la "$HOME/GiteaPC"
 
-          echo "GiteaPC directory:"
-          ls -la "$HOME/GiteaPC/giteapc"
-
-          echo "Python files:"
-          find "$HOME/GiteaPC" -type f -name "*.py" -print
-
-      - name: Run GiteaPC
+      - name: Check GiteaPC
         run: |
           cd "$HOME/GiteaPC"
 
-          python3 giteapc.py list
+          echo "GiteaPC help:"
+          python3 giteapc.py --help
 
       - name: Install Casio toolchain
         run: |
           cd "$HOME/GiteaPC"
 
           python3 giteapc.py install -y \
-            Lephenixnoir/fxsdk:noudisks2 \
             Lephenixnoir/sh-elf-binutils \
-            Lephenixnoir/sh-elf-gcc
-
-      - name: Install libraries
-        run: |
-          cd "$HOME/GiteaPC"
-
-          python3 giteapc.py install -y \
+            Lephenixnoir/sh-elf-gcc \
             Lephenixnoir/OpenLibm \
-            Vhex-Kernel-Core/fxlibc
+            Vhex-Kernel-Core/fxlibc \
+            Lephenixnoir/gint \
+            Lephenixnoir/fxsdk
 
-      - name: Rebuild GCC
-        run: |
-          cd "$HOME/GiteaPC"
-
-          python3 giteapc.py install -y \
-            Lephenixnoir/sh-elf-gcc
-
-      - name: Install gint
-        run: |
-          cd "$HOME/GiteaPC"
-
-          python3 giteapc.py install -y \
-            Lephenixnoir/gint
-
-      - name: Add GiteaPC tools to PATH
+      - name: Add installed tools to PATH
         run: |
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
@@ -97,11 +69,18 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
 
-          echo "fxsdk location:"
-          which fxsdk
+          echo "Looking for fxsdk..."
 
-          echo "fxsdk version:"
-          fxsdk --version || true
+          if command -v fxsdk >/dev/null 2>&1; then
+            echo "fxsdk found:"
+            command -v fxsdk
+            fxsdk --version || true
+          else
+            echo "fxsdk was not found."
+            echo "Installed files:"
+            find "$HOME/.local" -maxdepth 5 -type f -print 2>/dev/null || true
+            exit 1
+          fi
 
       - name: Build G1A
         run: |
