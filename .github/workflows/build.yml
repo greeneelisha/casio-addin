@@ -28,6 +28,7 @@ jobs:
             python3-venv \
             python3-pil \
             build-essential \
+            pkg-config \
             libpng-dev \
             libusb-1.0-0-dev \
             libudev-dev \
@@ -35,32 +36,60 @@ jobs:
 
       - name: Install GiteaPC
         run: |
-          curl -L "https://git.planet-casio.com/Lephenixnoir/GiteaPC/raw/branch/master/install.sh" -o /tmp/giteapc-install.sh
+          curl "https://git.planet-casio.com/Lephenixnoir/GiteaPC/raw/branch/master/install.sh" \
+            -o /tmp/giteapc-install.sh
+
           bash /tmp/giteapc-install.sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Locate GiteaPC
+        run: |
+          echo "HOME=$HOME"
+          echo "PATH=$PATH"
+
+          echo "Checking ~/.local/bin:"
+          ls -la "$HOME/.local/bin" || true
+
+          echo "Searching for giteapc:"
+          find "$HOME/.local" -type f -name "giteapc" -print 2>/dev/null || true
+
+          echo "Searching entire home directory:"
+          find "$HOME" -type f -name "giteapc" -print 2>/dev/null || true
 
       - name: Check GiteaPC
         run: |
-          export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-          which giteapc
-          giteapc list
+          export PATH="$HOME/.local/bin:$PATH"
+
+          if command -v giteapc >/dev/null 2>&1; then
+            echo "GiteaPC found:"
+            command -v giteapc
+            giteapc list
+          else
+            echo "ERROR: GiteaPC was not found."
+            echo "Contents of ~/.local:"
+            find "$HOME/.local" -maxdepth 3 -type f -print 2>/dev/null || true
+            exit 1
+          fi
 
       - name: Install Casio toolchain
         run: |
-          giteapc install -y Lephenixnoir/sh-elf-binutils
-          giteapc install -y Lephenixnoir/sh-elf-gcc
-          giteapc install -y Lephenixnoir/OpenLibm
-          giteapc install -y Lephenixnoir/fxlibc
-          giteapc install -y Lephenixnoir/gint
-          giteapc install -y Lephenixnoir/fxsdk
+          export PATH="$HOME/.local/bin:$PATH"
+
+          giteapc install -y \
+            Lephenixnoir/fxsdk \
+            Lephenixnoir/sh-elf-binutils \
+            Lephenixnoir/sh-elf-gcc \
+            Lephenixnoir/OpenLibm \
+            Vhex-Kernel-Core/fxlibc \
+            Lephenixnoir/gint
 
       - name: Build G1A
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           fxsdk build-fx
 
       - name: Find G1A
         run: |
+          echo "Searching for G1A files..."
           find . -type f -name "*.g1a" -print
 
       - name: Upload G1A
