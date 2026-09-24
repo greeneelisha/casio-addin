@@ -8,23 +8,26 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Get source
-        uses: actions/checkout@v4
+      - name: Check out source
+        uses: actions/checkout@v6
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             git \
+            curl \
+            wget \
             cmake \
+            make \
             python3 \
             python3-pip \
+            python3-venv \
             python3-pil \
             build-essential \
-            pkg-config \
             libpng-dev \
             libusb-1.0-0-dev \
             libudev-dev \
@@ -32,28 +35,34 @@ jobs:
 
       - name: Install GiteaPC
         run: |
-          python3 -m pip install --user giteapc
+          curl -L \
+            "https://git.planet-casio.com/Lephenixnoir/GiteaPC/raw/branch/master/install.sh" \
+            -o /tmp/giteapc-install.sh
+
+          bash /tmp/giteapc-install.sh
+
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install Casio toolchain
         run: |
+          giteapc install Lephenixnoir/sh-elf-binutils
           giteapc install Lephenixnoir/sh-elf-gcc
           giteapc install Lephenixnoir/OpenLibm
-          giteapc install Vhex-Kernel-Core/fxlibc
+          giteapc install Lephenixnoir/fxlibc
           giteapc install Lephenixnoir/gint
-          giteapc install Lephenixnoir/Fx-SDK
+          giteapc install Lephenixnoir/fxsdk
 
       - name: Build G1A
         run: |
           fxsdk build-fx
 
-      - name: Find G1A
+      - name: Locate G1A
         run: |
-          find . -name "*.g1a" -type f -print
+          find . -type f -name "*.g1a" -print
 
       - name: Upload G1A
         uses: actions/upload-artifact@v4
         with:
           name: Casio-Addin
-          path: "*.g1a"
+          path: "**/*.g1a"
           if-no-files-found: error
