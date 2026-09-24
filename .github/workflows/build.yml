@@ -17,6 +17,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
+
           sudo apt-get install -y \
             git \
             curl \
@@ -32,7 +33,20 @@ jobs:
             libpng-dev \
             libusb-1.0-0-dev \
             libudev-dev \
-            libncurses-dev
+            libncurses-dev \
+            libglib2.0-dev \
+            libudisks2-dev \
+            udisks2
+
+      - name: Verify UDisks2 dependencies
+        run: |
+          echo "Checking GLib..."
+          pkg-config --modversion glib-2.0
+          pkg-config --modversion gio-2.0
+          pkg-config --modversion gobject-2.0
+
+          echo "Checking UDisks2..."
+          pkg-config --modversion udisks2
 
       - name: Download GiteaPC
         run: |
@@ -60,30 +74,6 @@ jobs:
             Lephenixnoir/gint \
             Lephenixnoir/fxsdk
 
-      - name: Configure fxSDK without UDisks2
-        run: |
-          FXSDK_DIR="$HOME/.local/share/giteapc/Lephenixnoir/fxsdk"
-
-          echo "fxSDK directory:"
-          echo "$FXSDK_DIR"
-
-          cd "$FXSDK_DIR"
-
-          rm -rf build
-
-          cmake -B build \
-            -DCMAKE_INSTALL_PREFIX="$HOME/.local" \
-            -DFXLINK_DISABLE_UDISKS2=1
-
-      - name: Build and install fxSDK
-        run: |
-          FXSDK_DIR="$HOME/.local/share/giteapc/Lephenixnoir/fxsdk"
-
-          cd "$FXSDK_DIR"
-
-          cmake --build build -j2
-          cmake --install build
-
       - name: Add installed tools to PATH
         run: |
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -100,8 +90,10 @@ jobs:
             fxsdk --version || true
           else
             echo "fxsdk was not found."
+
             echo "Installed files:"
             find "$HOME/.local" -maxdepth 5 -type f -print 2>/dev/null || true
+
             exit 1
           fi
 
