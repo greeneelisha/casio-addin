@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
@@ -35,13 +35,17 @@ jobs:
 
       - name: Install GiteaPC
         run: |
-          curl -L \
-            "https://git.planet-casio.com/Lephenixnoir/GiteaPC/raw/branch/master/install.sh" \
-            -o /tmp/giteapc-install.sh
+          git clone https://git.planet-casio.com/Lephenixnoir/GiteaPC.git "$HOME/GiteaPC"
+          cd "$HOME/GiteaPC"
+          python3 giteapc.py --install
 
-          bash /tmp/giteapc-install.sh
-
+          echo "$HOME/GiteaPC" >> "$GITHUB_PATH"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check GiteaPC
+        run: |
+          command -v giteapc
+          giteapc --help
 
       - name: Install Casio toolchain
         run: |
@@ -56,7 +60,7 @@ jobs:
         run: |
           fxsdk build-fx
 
-      - name: Locate G1A
+      - name: Find G1A
         run: |
           find . -type f -name "*.g1a" -print
 
